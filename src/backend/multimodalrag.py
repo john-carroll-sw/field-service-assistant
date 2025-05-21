@@ -49,6 +49,7 @@ class MultimodalRag(RagBase):
         user_message: str,
         chat_thread: list,
         search_config: SearchConfig,
+        image_data: str = None,
     ):
         """Processes a chat request through the RAG pipeline."""
         await self._send_processing_step_message(
@@ -64,7 +65,7 @@ class MultimodalRag(RagBase):
                 ProcessingStep(
                     title="Grounding the user message",
                     type="code",
-                    content={"user_message": user_message, "chat_thread": chat_thread},
+                    content={"user_message": user_message, "chat_thread": chat_thread, "has_image": image_data is not None},
                 ),
             )
 
@@ -92,7 +93,7 @@ class MultimodalRag(RagBase):
             return
 
         messages = await self.prepare_llm_messages(
-            grounding_results, chat_thread, user_message
+            grounding_results, chat_thread, user_message, image_data
         )
 
         await self._formulate_response(
@@ -117,10 +118,31 @@ class MultimodalRag(RagBase):
         grounding_results: GroundingResults,
         chat_thread: List[Message],
         search_text: str,
+        image_data: str = None,
     ):
         logger.info("Preparing LLM messages")
         try:
             collected_documents = []
+            
+            # Add uploaded image if available
+            if image_data and image_data.startswith('data:image'):
+                logger.info("Adding user uploaded image to the message")
+                collected_documents.append(
+                    {
+                        "type": "text",
+                        "text": "The user has uploaded an image to help explain their query:",
+                    }
+                )
+                collected_documents.append(
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": image_data
+                        },
+                    }
+                )
+                
+            # Add documents from grounding retrieval
             for doc in grounding_results["references"]:
                 if doc["content_type"] == "text":
                     collected_documents.append(

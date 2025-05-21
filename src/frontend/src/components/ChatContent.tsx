@@ -89,7 +89,16 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
                                         <div
                                             className={`chat-message ${message.role === RoleType.User ? "user-chat" : message.type === ThreadType.Info ? "info" : ""}`}
                                         >
-                                            {message.type === ThreadType.Message && <a>{message.message}</a>}
+                                            {message.type === ThreadType.Message && (
+                                                <>
+                                                    <a>{message.message}</a>
+                                                    {message.imageData && (
+                                                        <div className="user-uploaded-image">
+                                                            <img src={message.imageData} alt="User uploaded" />
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
                                             {
                                                 //message.type === ThreadType.Info && <Caption1 italic>{message.message}</Caption1>
                                             }

@@ -45,6 +45,7 @@ class RagBase(ABC):
         search_text = request_params.get("query", "")
         chat_thread = request_params.get("chatThread", [])
         config_dict = request_params.get("config", {})
+        image_data = request_params.get("imageData", None)
         search_config = SearchConfig(
             chunk_count=config_dict.get("chunk_count", 10),
             openai_api_mode=config_dict.get("openai_api_mode", "chat_completions"),
@@ -56,7 +57,7 @@ class RagBase(ABC):
         response = await self._create_stream_response(request)
         try:
             await self._process_request(
-                request_id, response, search_text, chat_thread, search_config
+                request_id, response, search_text, chat_thread, search_config, image_data
             )
         except Exception as e:
             print(e)
@@ -74,6 +75,7 @@ class RagBase(ABC):
         search_text: str,
         chat_thread: list,
         search_config: SearchConfig,
+        image_data: str = None,
     ):
         pass
 

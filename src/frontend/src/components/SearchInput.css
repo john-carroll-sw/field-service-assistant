@@ -31,6 +31,32 @@
     animation: colorFade 1.5s infinite;
 }
 
+.image-preview {
+    position: relative;
+    margin-bottom: 10px;
+    max-width: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.image-preview img {
+    width: 100%;
+    display: block;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    color: white !important;
+    border-radius: 50%;
+    min-width: 24px;
+    height: 24px;
+    padding: 0;
+}
+
 @keyframes colorFade {
     0% {
         color: lightgray;

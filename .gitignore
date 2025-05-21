@@ -75,3 +75,4 @@ do-not-commit
 backend/node_modules
 node_modules
 setupEnv.ps1
+image-upload-implementation.md

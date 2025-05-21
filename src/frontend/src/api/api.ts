@@ -5,17 +5,24 @@ import { SearchConfig } from "../components/SearchSettings";
 const sendChatApi = async (
     message: string,
     requestId: string,
-    chatThread: any,
+    chatThread: Array<{ role: string; content: Array<{ text: string; type: string }> }>,
     config: SearchConfig,
     onMessage: (message: EventSourceMessage) => void,
-    onError?: (err: unknown) => void
+    onError?: (err: unknown) => void,
+    imageData?: string
 ) => {
     const endpoint = "/chat";
 
     await fetchEventSource(endpoint, {
         openWhenHidden: true,
         method: "POST",
-        body: JSON.stringify({ query: message, request_id: requestId, chatThread: chatThread, config }),
+        body: JSON.stringify({ 
+            query: message, 
+            request_id: requestId, 
+            chatThread: chatThread, 
+            config,
+            imageData 
+        }),
         onerror: onError,
         onmessage: onMessage
     });

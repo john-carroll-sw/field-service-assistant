@@ -31,6 +31,7 @@ export interface Thread {
     textCitations?: Citation[];
     imageCitations?: Citation[];
     knowledgeAgentMessage?: KnowledgeAgentMessage;
+    imageData?: string;
 }
 
 export type Coordinates = { x: number; y: number };

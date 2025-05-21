@@ -50,3 +50,15 @@
     align-items: center;
     margin-top: 10px;
 }
+
+.user-uploaded-image {
+    margin-top: 10px;
+    max-width: 250px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.user-uploaded-image img {
+    width: 100%;
+    display: block;
+}
