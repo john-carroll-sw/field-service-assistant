@@ -57,7 +57,12 @@ class RagBase(ABC):
         response = await self._create_stream_response(request)
         try:
             await self._process_request(
-                request_id, response, search_text, chat_thread, search_config, image_data
+                request_id,
+                response,
+                search_text,
+                chat_thread,
+                search_config,
+                image_data,
             )
         except Exception as e:
             print(e)
@@ -240,6 +245,7 @@ class RagBase(ABC):
         logger.info(
             f"Sending processing step message for step: {processing_step.title}"
         )
+        # logger.info(f"Processing step details: {processing_step.to_dict()}")
         await self._send_message(
             response,
             MessageType.ProcessingStep.value,

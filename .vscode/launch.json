@@ -25,7 +25,7 @@
             "program": "${workspaceFolder}/src/backend/app.py",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/src/backend/.env",
-            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "python": "${workspaceFolder}/.venv/bin/python",
             "justMyCode": true
         }
     ]

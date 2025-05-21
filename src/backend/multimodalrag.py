@@ -65,7 +65,11 @@ class MultimodalRag(RagBase):
                 ProcessingStep(
                     title="Grounding the user message",
                     type="code",
-                    content={"user_message": user_message, "chat_thread": chat_thread, "has_image": image_data is not None},
+                    content={
+                        "user_message": user_message,
+                        "chat_thread": chat_thread,
+                        "has_image": image_data is not None,
+                    },
                 ),
             )
 
@@ -124,20 +128,21 @@ class MultimodalRag(RagBase):
         try:
             # Create user content with text and image if available
             user_content = [{"text": search_text, "type": "text"}]
-            
+
             # Add uploaded image to the user's message if available
-            if image_data and image_data.startswith('data:image'):
+            if image_data and image_data.startswith("data:image"):
                 logger.info("Adding user uploaded image to the user query")
-                user_content.append({
-                    "type": "image_url",
-                    "image_url": {
-                        "url": image_data
-                    }
-                })
-            
+                user_content.append(
+                    {"type": "image_url", "image_url": {"url": image_data}}
+                )
+
+            # After adding the image to user_content
+            # logger.info(f"Image data starts with: {image_data[:30]}...")
+            logger.info(f"User content with image: {user_content}")
+
             # Prepare documents from grounding retrieval separately
             collected_documents = []
-            
+
             # Add documents from grounding retrieval
             for doc in grounding_results["references"]:
                 if doc["content_type"] == "text":
@@ -186,16 +191,21 @@ class MultimodalRag(RagBase):
                     "content": [{"text": SYSTEM_PROMPT_NO_META_DATA, "type": "text"}],
                 },
                 *chat_thread,
-                {"role": "user", "content": user_content},  # User query with image if available
+                {
+                    "role": "user",
+                    "content": user_content,
+                },  # User query with image if available
             ]
-            
+
             # Only add the documents message if there are retrieved documents
             if collected_documents:
-                messages.append({
-                    "role": "user",
-                    "content": collected_documents,
-                })
-                
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": collected_documents,
+                    }
+                )
+
             return messages
         except Exception as e:
             logger.error(f"Error preparing LLM messages: {e}")

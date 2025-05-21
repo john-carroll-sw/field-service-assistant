@@ -8,7 +8,7 @@ import App from "./page/App.tsx";
 
 TimeAgo.addDefaultLocale(en);
 
-const Main = () => {
+export const Main = () => {
     return (
         <StrictMode>
             <App />
