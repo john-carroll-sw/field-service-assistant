@@ -13,35 +13,39 @@ export default function useChat(config: SearchConfig) {
 
     const refreshChats = async () => {
         setChats({});
-    };    const handleQuery = async (query: string, imageData?: string) => {
+    }; const handleQuery = async (query: string, imageData?: string) => {
         setIsLoading(true);
         try {
             const request_id = new Date().getTime().toString();
 
-            if (!chatId) setChatId(request_id);            const chatThread = thread
-                .filter(message => message.role === "user" || message.role === "assistant")
-                .map(msg => ({
-                    role: msg.role,
-                    content: [
-                        {
-                            text: msg.role === "assistant" 
-                                ? msg.answerPartial?.answer || "" 
-                                : msg.message || "",
-                            type: "text"
-                        }
-                    ]
-                }));setThread(prevThread => {
-                const newThread = [...prevThread, { 
-                    request_id, 
-                    type: ThreadType.Message, 
-                    message: query, 
+            if (!chatId)
+                setChatId(request_id); const chatThread = thread
+                    .filter(message => message.role === "user" || message.role === "assistant")
+                    .map(msg => ({
+                        role: msg.role,
+                        content: [
+                            {
+                                text: msg.role === "assistant"
+                                    ? msg.answerPartial?.answer || ""
+                                    : msg.message || "",
+                                type: "text"
+                            }
+                        ]
+                    }));
+
+            setThread(prevThread => {
+                const newThread = [...prevThread, {
+                    request_id,
+                    type: ThreadType.Message,
+                    message: query,
                     role: RoleType.User,
                     imageData
                 }];
                 return newThread;
             });
 
-            refreshChats();            await sendChatApi(
+            refreshChats(); 
+            await sendChatApi(
                 query,
                 request_id,
                 chatThread,
@@ -75,8 +79,7 @@ export default function useChat(config: SearchConfig) {
                 err => {
                     console.error(err);
                     throw err;
-                },
-                imageData
+                }
             );
         } catch (err) {
             console.error(err);

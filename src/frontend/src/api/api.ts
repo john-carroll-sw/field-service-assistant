@@ -8,21 +8,14 @@ const sendChatApi = async (
     chatThread: Array<{ role: string; content: Array<{ text: string; type: string }> }>,
     config: SearchConfig,
     onMessage: (message: EventSourceMessage) => void,
-    onError?: (err: unknown) => void,
-    imageData?: string
+    onError?: (err: unknown) => void
 ) => {
     const endpoint = "/chat";
 
     await fetchEventSource(endpoint, {
         openWhenHidden: true,
         method: "POST",
-        body: JSON.stringify({ 
-            query: message, 
-            request_id: requestId, 
-            chatThread: chatThread, 
-            config,
-            imageData 
-        }),
+        body: JSON.stringify({ query: message, request_id: requestId, chatThread: chatThread, config }),
         onerror: onError,
         onmessage: onMessage
     });
