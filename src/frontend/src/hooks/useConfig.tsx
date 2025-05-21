@@ -5,11 +5,11 @@ import { SearchConfig } from "../components/SearchSettings";
 
 export default function useConfig() {
     const [config, setConfig] = useState<SearchConfig>({
-        use_semantic_ranker: false,
+        use_semantic_ranker: true,
         chunk_count: 10,
         openai_api_mode: OpenAIAPIMode.ChatCompletions,
         use_streaming: true,
-        use_knowledge_agent: false
+        use_knowledge_agent: true
     });
 
     const [indexes, setIndexes] = useState<string[]>([]);

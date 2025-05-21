@@ -1,4 +1,4 @@
-export const IntroTitle = "Chat with Your Data (Text + Images)";
+export const IntroTitle = "Field Service Technician Assistant";
 
 export const IntroText =
-    "Build intelligent applications that can query and reason over both text and image data. With multimodal RAG, you can retrieve relevant content from documents, screenshots, and visuals, then generate grounded responses using large language models.";
+    "Your AI-powered assistant for field service technicians. Search through manuals, guides, and documentation to help you diagnose and repair equipment. Upload images of the equipment you're working on for visual assistance and troubleshooting guidance.";

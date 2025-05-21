@@ -74,20 +74,19 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
     };
 
     return (
-        <>
+        <React.Fragment>
             <div className="chat-container" ref={chatContainerRef}>
                 {messagesGroupedByRequestId.map((group, index) => (
-                    <>
-                        <div key={index} className="chat-message-group">
+                    <React.Fragment key={`group-${index}`}>
+                        <div className="chat-message-group">
                             {group.map((message, msgIndex) => {
                                 if (message.type === ThreadType.Answer) {
                                     messageToBeCopied[message.request_id] = message.answerPartial?.answer || "";
                                 }
 
                                 return (
-                                    <>
+                                    <React.Fragment key={`message-${message.request_id}-${msgIndex}`}>
                                         <div
-                                            key={msgIndex}
                                             className={`chat-message ${message.role === RoleType.User ? "user-chat" : message.type === ThreadType.Info ? "info" : ""}`}
                                         >
                                             {message.type === ThreadType.Message && <a>{message.message}</a>}
@@ -111,7 +110,7 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
                                             )}
 
                                             {(message.type === ThreadType.Citation || message.type === ThreadType.Error) && (
-                                                <>
+                                                <React.Fragment>
                                                     <div className="chat-footer">
                                                         <Tooltip
                                                             onVisibleChange={() => {
@@ -153,14 +152,14 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
                                                         textCitations={message.textCitations || []}
                                                         highlightedCitation={highlightedCitation}
                                                     />
-                                                </>
+                                                </React.Fragment>
                                             )}
                                         </div>
-                                    </>
+                                    </React.Fragment>
                                 );
                             })}
                         </div>
-                    </>
+                    </React.Fragment>
                 ))}
                 <ProcessingSteps
                     showProcessingSteps={showProcessingSteps}
@@ -170,7 +169,7 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
                     }}
                 />
             </div>
-        </>
+        </React.Fragment>
     );
 };
 

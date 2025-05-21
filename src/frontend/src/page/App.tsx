@@ -1,4 +1,4 @@
-import { Caption1, FluentProvider, webDarkTheme, webLightTheme } from "@fluentui/react-components";
+import { Caption1, FluentProvider } from "@fluentui/react-components";
 import { Title1 } from "@fluentui/react-components";
 
 import "./App.css";
@@ -16,11 +16,11 @@ import { useState } from "react";
 function App() {
     const { config, setConfig, indexes } = useConfig();
     const { thread, processingStepsMessage, chats, isLoading, handleQuery, onNewChat } = useChat(config);
-    const { darkMode, setDarkMode } = useTheme();
+    const { darkMode, setDarkMode, theme } = useTheme();
     const [newQ, setnewQ] = useState(false);
 
     return (
-        <FluentProvider theme={darkMode ? webDarkTheme : webLightTheme}>
+        <FluentProvider theme={theme}>
             <div className="container">
                 <Header darkMode={darkMode} toggleMode={setDarkMode} />
 
@@ -44,7 +44,7 @@ function App() {
                                 </Title1>
                                 <br />
                                 <Caption1 style={{ fontWeight: "bold" }} block align="center">
-                                    Choose an example to start with...
+                                    How can I help you with field service tasks today?
                                 </Caption1>
                                 <Samples
                                     handleQuery={(q, isNew) => {

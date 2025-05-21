@@ -1,9 +1,27 @@
 .header {
-    padding: 5px 15px;
+    padding: 12px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background-color: #0078d4;
+    color: white;
 }
+
+.header-dark {
+    background-color: #1a1a1a;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+}
+
+.header-title {
+    color: white;
+    margin: 0;
+    margin-left: 10px;
+}
+
 .header-right {
     display: flex;
     align-items: center;
