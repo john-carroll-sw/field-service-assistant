@@ -40,7 +40,7 @@ class SearchGroundingRetriever(GroundingRetriever):
 
         try:
             # Create search payload with the image-enriched query
-            payload = self.data_model.create_search_payload(query, options, image_data)
+            payload = self.data_model.create_search_payload(query, options)
 
             search_results = await self.search_client.search(
                 search_text=payload["search"],

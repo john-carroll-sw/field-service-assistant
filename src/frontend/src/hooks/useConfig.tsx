@@ -9,7 +9,7 @@ export default function useConfig() {
         chunk_count: 10,
         openai_api_mode: OpenAIAPIMode.ChatCompletions,
         use_streaming: true,
-        use_knowledge_agent: true
+        use_knowledge_agent: false
     });
 
     const [indexes, setIndexes] = useState<string[]>([]);
