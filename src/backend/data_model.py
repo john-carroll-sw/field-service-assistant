@@ -54,8 +54,12 @@ class DocumentPerChunkDataModel(DataModel):
             "select": "content_id, content_text, document_title, text_document_id, image_document_id, locationMetadata, content_path",
         }
 
+        # Use semantic search if configured
         if search_config["use_semantic_ranker"]:
             payload["query_type"] = "semantic"
+
+        # Note: In the future, we could add image vector search here if the search index supports it
+        # by creating embeddings from the image and using them for similarity search
 
         return payload
 

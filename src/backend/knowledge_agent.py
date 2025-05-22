@@ -86,12 +86,24 @@ class KnowledgeAgentGrounding(GroundingRetriever):
         user_message: str,
         chat_thread: List[Message],
         options: dict,
+        image_data: str = None,
     ) -> GroundingResults:
 
         try:
+            # Create user content with text and potentially image
+            user_content = [{"text": user_message, "type": "text"}]
+            
+            # If we have an image, we should include it in the user message
+            # to let the knowledge agent utilize the visual information
+            if image_data and image_data.startswith("data:image"):
+                user_content.append({
+                    "type": "image_url", 
+                    "image_url": {"url": image_data}
+                })
+            
             messages = [
                 *chat_thread,
-                {"role": "user", "content": [{"text": user_message, "type": "text"}]},
+                {"role": "user", "content": user_content},
             ]
 
             result = await self.retrieval_agent_client.retrieve(

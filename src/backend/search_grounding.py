@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import List, Dict, TypedDict
 from openai import AsyncAzureOpenAI
 from data_model import DataModel
@@ -29,12 +30,17 @@ class SearchGroundingRetriever(GroundingRetriever):
         user_message: str,
         chat_thread: List[Message],
         options: SearchConfig,
+        image_data: str = None,
     ) -> GroundingResults:
+        # Generate a search query using both the user message and image analysis if available
+        # This enhanced query will contain keywords derived from visual content
+        query = await self._generate_search_query(user_message, chat_thread, image_data)
 
-        query = await self._generate_search_query(user_message, chat_thread)
+        logger.info(f"Generated search query with image augmentation: {query}")
 
         try:
-            payload = self.data_model.create_search_payload(query, options)
+            # Create search payload with the image-enriched query
+            payload = self.data_model.create_search_payload(query, options, image_data)
 
             search_results = await self.search_client.search(
                 search_text=payload["search"],
@@ -58,23 +64,48 @@ class SearchGroundingRetriever(GroundingRetriever):
         }
 
     async def _generate_search_query(
-        self, user_message: str, chat_thread: List[Message]
+        self, user_message: str, chat_thread: List[Message], image_data: str = None
     ) -> str:
         try:
+            # Build user content that includes image if provided
+            user_content = [{"type": "text", "text": user_message}]
+
+            # Add the image to user_content if available, making this a true multimodal request
+            if image_data and image_data.startswith("data:image"):
+                logger.info("Using image data for search query generation")
+                user_content.append(
+                    {"type": "image_url", "image_url": {"url": image_data}}
+                )
+
+            # System prompt that instructs GPT to analyze both text and image
+            system_prompt = SEARCH_QUERY_SYSTEM_PROMPT
+            if image_data and image_data.startswith("data:image"):
+                system_prompt += (
+                    "\n\nThe user has uploaded an image with their query. "
+                    + "Carefully analyze the image and extract relevant details including: "
+                    + "equipment type, model numbers, brand names, visible parts, damages, "
+                    + "error conditions, and any text visible in the image. "
+                    + "Combine these visual details with the user's text query to generate "
+                    + "comprehensive search terms that will help retrieve relevant technical documentation."
+                )
+
+            # Create a multimodal message structure
             messages = [
-                {"role": "user", "content": user_message},
+                {
+                    "role": "system",
+                    "content": [{"type": "text", "text": system_prompt}],
+                },
                 *chat_thread,
+                {"role": "user", "content": user_content},
             ]
 
             response = await self.openai_client.chat.completions.create(
                 model=self.chatcompletions_model_name,
-                messages=[
-                    {"role": "system", "content": SEARCH_QUERY_SYSTEM_PROMPT},
-                    *messages,
-                ],
+                messages=messages,
             )
             return response.choices[0].message.content
         except Exception as e:
+            logger.error(f"Error generating search query with image: {e}")
             raise Exception(
                 f"Error while calling Azure OpenAI to generate a search query: {str(e)}"
             )

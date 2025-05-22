@@ -16,6 +16,7 @@ class GroundingRetriever(ABC):
         user_message: str,
         chat_thread: List[Message],
         options: dict,
+        image_data: str = None,
     ) -> GroundingResults:
         """Retrieve relevant documents based on the user message and chat history.
 
@@ -23,6 +24,7 @@ class GroundingRetriever(ABC):
             user_message: The current user message to process
             chat_thread: The history of messages in the current chat
             options: Configuration options for the retriever
+            image_data: Base64-encoded image data if an image was uploaded with the message
 
         Returns:
             GroundingResults containing the retrieved references and search queries

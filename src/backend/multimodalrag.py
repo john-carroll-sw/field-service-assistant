@@ -76,7 +76,7 @@ class MultimodalRag(RagBase):
             grounding_retriever = self._get_grounding_retriever(search_config)
 
             grounding_results = await grounding_retriever.retrieve(
-                user_message, chat_thread, search_config
+                user_message, chat_thread, search_config, image_data
             )
 
             await self._send_processing_step_message(
@@ -97,7 +97,7 @@ class MultimodalRag(RagBase):
             return
 
         messages = await self.prepare_llm_messages(
-            grounding_results, chat_thread, user_message, image_data
+            grounding_results, chat_thread, user_message
         )
 
         await self._formulate_response(
@@ -122,19 +122,19 @@ class MultimodalRag(RagBase):
         grounding_results: GroundingResults,
         chat_thread: List[Message],
         search_text: str,
-        image_data: str = None,
+        # image_data: str = None,
     ):
         logger.info("Preparing LLM messages")
         try:
             # Create user content with text and image if available
             user_content = [{"text": search_text, "type": "text"}]
 
-            # Add uploaded image to the user's message if available
-            if image_data and image_data.startswith("data:image"):
-                logger.info("Adding user uploaded image to the user query")
-                user_content.append(
-                    {"type": "image_url", "image_url": {"url": image_data}}
-                )
+            # # Add uploaded image to the user's message if available
+            # if image_data and image_data.startswith("data:image"):
+            #     logger.info("Adding user uploaded image to the user query")
+            #     user_content.append(
+            #         {"type": "image_url", "image_url": {"url": image_data}}
+            #     )
 
             # After adding the image to user_content
             # logger.info(f"Image data starts with: {image_data[:30]}...")
@@ -194,7 +194,7 @@ class MultimodalRag(RagBase):
                 {
                     "role": "user",
                     "content": user_content,
-                },  # User query with image if available
+                },
             ]
 
             # Only add the documents message if there are retrieved documents
