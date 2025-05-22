@@ -6,7 +6,7 @@ azure-identity
 tqdm 
 python-dotenv
 requests
-openai
+openai[voice_helpers]
 instructor
 pydantic
 pillow
