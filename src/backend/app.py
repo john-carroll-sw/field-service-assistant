@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from aiohttp import web
 from rich.logging import RichHandler
+from dotenv import load_dotenv
 from openai import AsyncAzureOpenAI
 from azure.identity.aio import (
     DefaultAzureCredential,
@@ -22,6 +23,13 @@ from multimodalrag import MultimodalRag
 from data_model import DocumentPerChunkDataModel
 from citation_file_handler import CitationFilesHandler
 from voice_service import VoiceService
+
+
+# Load environment variables from .env file
+env_path = Path(__file__).parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+    print(f"Loaded environment variables from {env_path}")
 
 
 logging.basicConfig(

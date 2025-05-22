@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Tooltip } from "@fluentui/react-components";
+import { Button, Tooltip, Switch } from "@fluentui/react-components";
 import { Mic20Regular, MicOff20Regular, SpeakerBox20Regular, SpeakerMute20Regular } from "@fluentui/react-icons";
 import "./VoiceControl.css";
 
@@ -14,10 +14,15 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [currentTranscript, setCurrentTranscript] = useState("");
+    const [continuousMode, setContinuousMode] = useState(true); // Default to continuous mode
     const wsRef = useRef<WebSocket | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
     const audioBufferQueue = useRef<AudioBuffer[]>([]);
     const isPlayingRef = useRef<boolean>(false);
+    const streamRef = useRef<MediaStream | null>(null);
+    const processorRef = useRef<ScriptProcessorNode | null>(null);
+    const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+    const audioSetupCompleteRef = useRef<boolean>(false);
 
     // Function to play audio buffers sequentially - wrapped in useCallback to avoid recreating on every render
     const playNextBuffer = useCallback(() => {
@@ -56,8 +61,20 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
                     // Handle complete transcript
                     const finalTranscript = data.text || currentTranscript;
                     setCurrentTranscript("");
-                    onTranscript(finalTranscript);
-                    setIsListening(false);
+
+                    if (finalTranscript.trim()) {
+                        onTranscript(finalTranscript);
+                    }
+
+                    // In continuous mode, keep listening
+                    if (continuousMode) {
+                        // Keep the microphone active - already set up
+                        console.log("Continuing to listen in continuous mode");
+                    } else {
+                        // In non-continuous mode, stop listening
+                        setIsListening(false);
+                        cleanupAudioResources();
+                    }
                 } else if (data.type === "tts_chunk") {
                     // Handle TTS audio chunk
                     if (!audioContextRef.current) {
@@ -108,8 +125,9 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
             if (wsRef.current) {
                 wsRef.current.close();
             }
+            cleanupAudioResources();
         };
-    }, [currentTranscript, onTranscript, playNextBuffer]);
+    }, [currentTranscript, onTranscript, playNextBuffer, continuousMode]);
 
     // Function to handle microphone button click
     const toggleListening = async () => {
@@ -123,12 +141,19 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
             // Request microphone access
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                streamRef.current = stream;
+
                 // Type safe way to handle vendor prefixed API
                 const globalWindow = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext };
                 const AudioContextClass = globalWindow.AudioContext || globalWindow.webkitAudioContext;
                 const audioContext = new (AudioContextClass as typeof AudioContext)();
+                audioContextRef.current = audioContext;
+
                 const source = audioContext.createMediaStreamSource(stream);
+                sourceRef.current = source;
+
                 const processor = audioContext.createScriptProcessor(1024, 1, 1);
+                processorRef.current = processor;
 
                 source.connect(processor);
                 processor.connect(audioContext.destination);
@@ -173,7 +198,29 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
             // Stop listening
             setIsListening(false);
             wsRef.current?.send(JSON.stringify({ type: "stt_stop" }));
+
+            // Cleanup audio resources
+            cleanupAudioResources();
         }
+    };
+
+    const cleanupAudioResources = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+
+        if (sourceRef.current) {
+            sourceRef.current.disconnect();
+            sourceRef.current = null;
+        }
+
+        if (processorRef.current) {
+            processorRef.current.disconnect();
+            processorRef.current = null;
+        }
+
+        audioSetupCompleteRef.current = false;
     };
 
     // Effect to handle Text-to-Speech when responseText changes
@@ -213,9 +260,19 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
                         aria-label={isSpeaking ? "Speaking" : "Text to Speech"}
                     />
                 </Tooltip>
+
+                <Switch
+                    checked={continuousMode}
+                    onChange={() => setContinuousMode(!continuousMode)}
+                    label={continuousMode ? "Continuous Mode: On" : "Continuous Mode: Off"}
+                />
             </div>
 
-            {isListening && <div className="transcript-preview">{currentTranscript || "Listening..."}</div>}
+            {isListening && (
+                <div className={`transcript-preview${continuousMode ? " continuous" : ""}`}>
+                    {currentTranscript || (continuousMode ? "Listening continuously..." : "Listening...")}
+                </div>
+            )}
         </div>
     );
 };
