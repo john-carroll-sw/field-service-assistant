@@ -4,7 +4,7 @@ import { Button, Caption1, Spinner } from "@fluentui/react-components";
 import { Search20Filled, Image20Regular, Dismiss12Regular } from "@fluentui/react-icons";
 
 import "./SearchInput.css";
-import VoiceControl from "./VoiceControl";
+// import VoiceControl from "./VoiceControl";
 
 interface SearchInputProps {
     isLoading: boolean;
@@ -46,12 +46,12 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
         }
     };
 
-    const handleTranscript = (text: string) => {
-        setQuery(text);
-        if (text.trim()) {
-            onSearch(text.trim(), uploadedImage || undefined);
-        }
-    };
+    // const handleTranscript = (text: string) => {
+    //     setQuery(text);
+    //     if (text.trim()) {
+    //         onSearch(text.trim(), uploadedImage || undefined);
+    //     }
+    // };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
@@ -109,7 +109,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
                         icon={isLoading ? <Spinner size="extra-small" /> : <Search20Filled />}
                         onClick={handleSearch}
                     />
-                    <VoiceControl onTranscript={handleTranscript} responseText={null} isProcessing={isLoading} />
+                    {/* <VoiceControl onTranscript={handleTranscript} responseText={null} isProcessing={isLoading} /> */}
                 </div>
             </div>
             <Caption1 style={{ marginTop: "5px", color: "lightgray" }} block align="center" italic>

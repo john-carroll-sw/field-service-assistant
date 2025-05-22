@@ -10,7 +10,7 @@ import "./ChatContent.css";
 import Citations from "./Citations";
 import ProcessingSteps from "./ProcessingSteps";
 import { Copy20Regular, BrainCircuit20Regular } from "@fluentui/react-icons";
-import VoiceControl from "./VoiceControl";
+// import VoiceControl from "./VoiceControl";
 
 interface Props {
     processingStepMsg: Record<string, ProcessingStepsMessage[]>;
@@ -22,7 +22,7 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
     const [processRequestId, setProcessRequestId] = React.useState("");
     const [highlightedCitation, setHighlightedCitation] = React.useState<string | undefined>();
     const [showCopied, setShowCopied] = React.useState(false);
-    const [latestResponse, setLatestResponse] = React.useState<string | null>(null);
+    // const [latestResponse, setLatestResponse] = React.useState<string | null>(null);
 
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const messageToBeCopied: Record<string, string> = {};
@@ -34,16 +34,16 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
     }, [thread]);
 
     // Set latest assistant response for TTS
-    useEffect(() => {
-        const assistantMessages = thread.filter(msg => msg.role === RoleType.Assistant && msg.type === ThreadType.Answer && msg.answerPartial?.answer);
+    // useEffect(() => {
+    //     const assistantMessages = thread.filter(msg => msg.role === RoleType.Assistant && msg.type === ThreadType.Answer && msg.answerPartial?.answer);
 
-        if (assistantMessages.length > 0) {
-            // Sort by request_id to get the latest message
-            const latestMessage = assistantMessages.sort((a, b) => parseInt(b.request_id) - parseInt(a.request_id))[0];
+    //     if (assistantMessages.length > 0) {
+    //         // Sort by request_id to get the latest message
+    //         const latestMessage = assistantMessages.sort((a, b) => parseInt(b.request_id) - parseInt(a.request_id))[0];
 
-            setLatestResponse(latestMessage.answerPartial?.answer || null);
-        }
-    }, [thread]);
+    //         setLatestResponse(latestMessage.answerPartial?.answer || null);
+    //     }
+    // }, [thread]);
 
     const messagesGroupedByRequestId = Object.values(
         thread.reduce((acc: { [key: string]: Thread[] }, message: Thread) => {
@@ -191,9 +191,9 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
                 />
 
                 {/* Voice control for TTS */}
-                <div className="voice-tts-container">
+                {/* <div className="voice-tts-container">
                     <VoiceControl onTranscript={() => {}} responseText={latestResponse} isProcessing={false} />
-                </div>
+                </div> */}
             </div>
         </React.Fragment>
     );
