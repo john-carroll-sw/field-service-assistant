@@ -9,14 +9,18 @@
     height: 50px;
     border-radius: 30px;
     padding: 0 6px;
+    position: relative;
 }
 .input {
     flex: 1;
+    min-width: 0;
     border: unset;
     outline: unset;
     font-size: 14px;
     background-color: transparent;
     padding: 5px 10px;
+    margin-left: 4px; /* Add margin to separate from mic button */
+    min-width: 120px;
 }
 .search-controls {
     display: flex;

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Tooltip, Switch } from "@fluentui/react-components";
-import { Mic20Regular, MicOff20Regular, SpeakerBox20Regular, SpeakerMute20Regular } from "@fluentui/react-icons";
+import { Button, Tooltip } from "@fluentui/react-components";
+import { Mic20Regular, MicOff20Regular } from "@fluentui/react-icons";
 import "./VoiceControl.css";
 
 interface VoiceControlProps {
@@ -14,7 +14,8 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [currentTranscript, setCurrentTranscript] = useState("");
-    const [continuousMode, setContinuousMode] = useState(true); // Default to continuous mode
+    const [audioLevel, setAudioLevel] = useState(0);
+    const [noAudioWarning, setNoAudioWarning] = useState(false);
     const wsRef = useRef<WebSocket | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
     const audioBufferQueue = useRef<AudioBuffer[]>([]);
@@ -47,7 +48,7 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
             const ws = new WebSocket(`${protocol}//${window.location.host}/voice`);
 
             ws.onopen = () => {
-                console.log("Voice WebSocket connected");
+                console.log("[VoiceControl] Voice WebSocket connected");
                 setIsConnected(true);
             };
 
@@ -66,15 +67,8 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
                         onTranscript(finalTranscript);
                     }
 
-                    // In continuous mode, keep listening
-                    if (continuousMode) {
-                        // Keep the microphone active - already set up
-                        console.log("Continuing to listen in continuous mode");
-                    } else {
-                        // In non-continuous mode, stop listening
-                        setIsListening(false);
-                        cleanupAudioResources();
-                    }
+                    // Always continuous, so keep listening
+                    console.log("Continuing to listen in continuous mode (VAD server)");
                 } else if (data.type === "tts_chunk") {
                     // Handle TTS audio chunk
                     if (!audioContextRef.current) {
@@ -106,11 +100,11 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
             };
 
             ws.onerror = error => {
-                console.error("WebSocket error:", error);
+                console.error("[VoiceControl] WebSocket error:", error);
             };
 
             ws.onclose = () => {
-                console.log("WebSocket connection closed");
+                console.log("[VoiceControl] WebSocket connection closed");
                 setIsConnected(false);
                 // Try to reconnect in 3 seconds
                 setTimeout(connectWebsocket, 3000);
@@ -127,7 +121,7 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
             }
             cleanupAudioResources();
         };
-    }, [currentTranscript, onTranscript, playNextBuffer, continuousMode]);
+    }, [currentTranscript, onTranscript, playNextBuffer]);
 
     // Function to handle microphone button click
     const toggleListening = async () => {
@@ -137,17 +131,21 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
             // Start listening
             setIsListening(true);
             setCurrentTranscript("");
+            setNoAudioWarning(false);
+            console.log("[VoiceControl] Requesting microphone access...");
 
             // Request microphone access
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 streamRef.current = stream;
+                console.log("[VoiceControl] Microphone access granted.");
 
                 // Type safe way to handle vendor prefixed API
                 const globalWindow = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext };
                 const AudioContextClass = globalWindow.AudioContext || globalWindow.webkitAudioContext;
                 const audioContext = new (AudioContextClass as typeof AudioContext)();
                 audioContextRef.current = audioContext;
+                console.log(`[VoiceControl] AudioContext created, sampleRate: ${audioContext.sampleRate}`);
 
                 const source = audioContext.createMediaStreamSource(stream);
                 sourceRef.current = source;
@@ -160,7 +158,9 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
 
                 // Start STT session
                 wsRef.current?.send(JSON.stringify({ type: "stt_start" }));
+                console.log("[VoiceControl] Sent stt_start to backend.");
 
+                let silentFrames = 0;
                 processor.onaudioprocess = e => {
                     if (!isListening) {
                         // Clean up if we've stopped listening
@@ -172,6 +172,28 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
 
                     // Get raw audio data
                     const inputData = e.inputBuffer.getChannelData(0);
+
+                    // --- AUDIO LEVEL (RMS) ---
+                    let sum = 0;
+                    for (let i = 0; i < inputData.length; i++) {
+                        sum += inputData[i] * inputData[i];
+                    }
+                    const rms = Math.sqrt(sum / inputData.length);
+                    setAudioLevel(rms); // 0 (silent) to ~1 (loud)
+                    if (rms < 0.01) {
+                        silentFrames++;
+                    } else {
+                        silentFrames = 0;
+                    }
+                    if (silentFrames > 40) {
+                        // ~2 seconds at 1024/24000
+                        setNoAudioWarning(true);
+                    } else {
+                        setNoAudioWarning(false);
+                    }
+                    if (silentFrames % 10 === 0) {
+                        console.log(`[VoiceControl] onaudioprocess RMS: ${rms.toFixed(4)}`);
+                    }
 
                     // Convert to 16-bit PCM
                     const pcm16 = new Int16Array(inputData.length);
@@ -191,13 +213,14 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
                     );
                 };
             } catch (err) {
-                console.error("Error accessing microphone:", err);
+                console.error("[VoiceControl] Error accessing microphone:", err);
                 setIsListening(false);
             }
         } else {
             // Stop listening
             setIsListening(false);
             wsRef.current?.send(JSON.stringify({ type: "stt_stop" }));
+            console.log("[VoiceControl] Sent stt_stop to backend.");
 
             // Cleanup audio resources
             cleanupAudioResources();
@@ -239,40 +262,30 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onTranscript, responseText,
         }
     }, [responseText, isConnected, isSpeaking]);
 
+    // --- UI: single circular mic button, left-aligned ---
     return (
-        <div className="voice-control-container">
-            <div className="voice-buttons">
-                <Tooltip content={isListening ? "Stop listening" : "Start listening"} relationship="label">
-                    <Button
-                        icon={isListening ? <MicOff20Regular /> : <Mic20Regular />}
-                        appearance={isListening ? "primary" : "secondary"}
-                        disabled={!isConnected || isProcessing}
-                        onClick={toggleListening}
-                        aria-label={isListening ? "Stop listening" : "Start listening"}
-                    />
-                </Tooltip>
-
-                <Tooltip content={isSpeaking ? "Speaking..." : "Text to Speech"} relationship="label">
-                    <Button
-                        icon={isSpeaking ? <SpeakerBox20Regular /> : <SpeakerMute20Regular />}
-                        appearance={isSpeaking ? "primary" : "secondary"}
-                        disabled={isSpeaking}
-                        aria-label={isSpeaking ? "Speaking" : "Text to Speech"}
-                    />
-                </Tooltip>
-
-                <Switch
-                    checked={continuousMode}
-                    onChange={() => setContinuousMode(!continuousMode)}
-                    label={continuousMode ? "Continuous Mode: On" : "Continuous Mode: Off"}
+        <div className="voice-mic-left">
+            <Tooltip content={isListening ? "Stop listening" : "Start listening"} relationship="label">
+                <Button
+                    icon={isListening ? <MicOff20Regular /> : <Mic20Regular />}
+                    shape="circular"
+                    size="medium"
+                    appearance={isListening ? "primary" : "secondary"}
+                    disabled={!isConnected || isProcessing}
+                    onClick={toggleListening}
+                    aria-label={isListening ? "Stop listening" : "Start listening"}
+                />
+            </Tooltip>
+            <div className="audio-bar-container" aria-label={`Audio level: ${(audioLevel * 100).toFixed(0)}%`}>
+                <div
+                    className="audio-bar-fill"
+                    style={{
+                        width: isListening ? `${Math.min(1, audioLevel) * 100}%` : "100%",
+                        background: isListening ? (audioLevel > 0.6 ? "#f44336" : audioLevel > 0.3 ? "#ff9800" : "#4caf50") : "#bbb"
+                    }}
                 />
             </div>
-
-            {isListening && (
-                <div className={`transcript-preview${continuousMode ? " continuous" : ""}`}>
-                    {currentTranscript || (continuousMode ? "Listening continuously..." : "Listening...")}
-                </div>
-            )}
+            {noAudioWarning && isListening && <div className="audio-warning">No audio detected. Is your mic muted?</div>}
         </div>
     );
 };

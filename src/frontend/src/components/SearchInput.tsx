@@ -71,6 +71,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
             )}
 
             <div className="search-container" style={{ boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" }}>
+                {/* <VoiceControl onTranscript={handleTranscript} responseText={null} isProcessing={isLoading} /> */}
                 <input
                     disabled={isLoading}
                     className="input"
@@ -109,7 +110,6 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
                         icon={isLoading ? <Spinner size="extra-small" /> : <Search20Filled />}
                         onClick={handleSearch}
                     />
-                    {/* <VoiceControl onTranscript={handleTranscript} responseText={null} isProcessing={isLoading} /> */}
                 </div>
             </div>
             <Caption1 style={{ marginTop: "5px", color: "lightgray" }} block align="center" italic>
