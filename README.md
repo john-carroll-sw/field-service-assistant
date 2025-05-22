@@ -1,6 +1,6 @@
 # Field Service Assistant: Multimodal RAG with Voice Interface
 
-![Field Service Assistant Banner](docs/images/sample_snap_1.jpg)
+![Field Service Assistant Banner](docs/images/main_page.png)
 
 ## Overview
 
@@ -27,7 +27,7 @@ The Field Service Assistant solves this by allowing technicians to:
 
 ## System Architecture
 
-![System Architecture](docs/images/app_depl_success.png)
+![System Architecture](docs/images/water_damage_citations.png)
 
 The application is built on a modern architecture leveraging Azure's AI services:
 
