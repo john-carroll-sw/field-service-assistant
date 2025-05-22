@@ -21,6 +21,7 @@ from constants import USER_AGENT
 from multimodalrag import MultimodalRag
 from data_model import DocumentPerChunkDataModel
 from citation_file_handler import CitationFilesHandler
+from voice_service import VoiceService
 
 
 logging.basicConfig(
@@ -132,6 +133,9 @@ async def create_app():
         ]
     )
     app.router.add_static("/", path=current_directory / "static", name="static")
+
+    # Initialize voice service
+    voice_service = VoiceService(app)
 
     return app
 

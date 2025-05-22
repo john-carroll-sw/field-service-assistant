@@ -10,6 +10,7 @@ import "./ChatContent.css";
 import Citations from "./Citations";
 import ProcessingSteps from "./ProcessingSteps";
 import { Copy20Regular, BrainCircuit20Regular } from "@fluentui/react-icons";
+import VoiceControl from "./VoiceControl";
 
 interface Props {
     processingStepMsg: Record<string, ProcessingStepsMessage[]>;
@@ -21,6 +22,7 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
     const [processRequestId, setProcessRequestId] = React.useState("");
     const [highlightedCitation, setHighlightedCitation] = React.useState<string | undefined>();
     const [showCopied, setShowCopied] = React.useState(false);
+    const [latestResponse, setLatestResponse] = React.useState<string | null>(null);
 
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const messageToBeCopied: Record<string, string> = {};
@@ -28,6 +30,18 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
     useEffect(() => {
         if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [thread]);
+
+    // Set latest assistant response for TTS
+    useEffect(() => {
+        const assistantMessages = thread.filter(msg => msg.role === RoleType.Assistant && msg.type === ThreadType.Answer && msg.answerPartial?.answer);
+
+        if (assistantMessages.length > 0) {
+            // Sort by request_id to get the latest message
+            const latestMessage = assistantMessages.sort((a, b) => parseInt(b.request_id) - parseInt(a.request_id))[0];
+
+            setLatestResponse(latestMessage.answerPartial?.answer || null);
         }
     }, [thread]);
 
@@ -59,9 +73,7 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
     const renderWithCitations = (children: React.ReactNode) => {
         return React.Children.map(children, child => {
             if (typeof child === "string") {
-                return child
-                    .split(citationRegex)
-                    .map((part, index) => (index % 2 === 0 ? part : index % 2 === 1 ? citationHit(index, part) : null));
+                return child.split(citationRegex).map((part, index) => (index % 2 === 0 ? part : index % 2 === 1 ? citationHit(index, part) : null));
             }
             return child;
         });
@@ -177,6 +189,11 @@ const ChatContent: React.FC<Props> = ({ thread, processingStepMsg }) => {
                         setShowProcessingSteps(!showProcessingSteps);
                     }}
                 />
+
+                {/* Voice control for TTS */}
+                <div className="voice-tts-container">
+                    <VoiceControl onTranscript={() => {}} responseText={latestResponse} isProcessing={false} />
+                </div>
             </div>
         </React.Fragment>
     );

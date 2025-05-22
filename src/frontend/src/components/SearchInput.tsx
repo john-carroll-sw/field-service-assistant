@@ -4,6 +4,7 @@ import { Button, Caption1, Spinner } from "@fluentui/react-components";
 import { Search20Filled, Image20Regular, Dismiss12Regular } from "@fluentui/react-icons";
 
 import "./SearchInput.css";
+import VoiceControl from "./VoiceControl";
 
 interface SearchInputProps {
     isLoading: boolean;
@@ -23,7 +24,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = event => {
                 setUploadedImage(event.target?.result as string);
             };
             reader.readAsDataURL(file);
@@ -33,7 +34,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
     const clearImage = () => {
         setUploadedImage(null);
         if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+            fileInputRef.current.value = "";
         }
     };
 
@@ -42,6 +43,13 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
             onSearch(query.trim(), uploadedImage || undefined);
             setQuery("");
             setUploadedImage(null);
+        }
+    };
+
+    const handleTranscript = (text: string) => {
+        setQuery(text);
+        if (text.trim()) {
+            onSearch(text.trim(), uploadedImage || undefined);
         }
     };
 
@@ -58,13 +66,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
             {uploadedImage && (
                 <div className="image-preview">
                     <img src={uploadedImage} alt="Uploaded" />
-                    <Button
-                        appearance="subtle"
-                        icon={<Dismiss12Regular />}
-                        onClick={clearImage}
-                        title="Remove image"
-                        className="remove-image-btn"
-                    />
+                    <Button appearance="subtle" icon={<Dismiss12Regular />} onClick={clearImage} title="Remove image" className="remove-image-btn" />
                 </div>
             )}
 
@@ -84,7 +86,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
                         id="image-upload"
                         ref={fileInputRef}
                         accept="image/*"
-                        style={{ display: 'none' }}
+                        style={{ display: "none" }}
                         onChange={handleImageUpload}
                         disabled={isLoading}
                         aria-label="Upload image"
@@ -107,6 +109,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ isLoading, onSearch }) => {
                         icon={isLoading ? <Spinner size="extra-small" /> : <Search20Filled />}
                         onClick={handleSearch}
                     />
+                    <VoiceControl onTranscript={handleTranscript} responseText={null} isProcessing={isLoading} />
                 </div>
             </div>
             <Caption1 style={{ marginTop: "5px", color: "lightgray" }} block align="center" italic>

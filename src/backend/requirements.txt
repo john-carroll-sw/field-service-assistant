@@ -17,3 +17,4 @@ azure-search-documents==11.6.0a20250505003
 pyjwt
 pyaudio
 websocket-client
+websockets

@@ -62,3 +62,11 @@
     width: 100%;
     display: block;
 }
+
+.voice-tts-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border-top: 1px solid #eaeaea;
+}
