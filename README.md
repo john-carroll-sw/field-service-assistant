@@ -2,10 +2,11 @@
 
 > **Important Notice:**  
 > This project is intentionally kept lean and simple, providing a hands-on experience with multimodal indexing, RAG search and AI reasoning techniques. While not intended for production use, it serves as a powerful starting point for exploring how it can unlock new possibilities in building smarter, more context-aware applications.
+
+![Field Service Assistant Banner](docs/images/demo.gif)
+
 > **Voice Integration:**  
 > The real-time voice (STT/TTS) feature is a work in progress. Stay tuned for updates as new capabilities are added and improved!
-
-![Field Service Assistant Banner](docs/images/main_page.png)
 
 ## Overview
 
@@ -13,7 +14,7 @@ The Field Service Assistant is a proof-of-concept application designed to revolu
 
 **Key Features:**
 
-- 🗣️ **Voice Interface**: Hands-free speech-to-text input and text-to-speech responses using Azure OpenAI GPT-4o-Transcribe and GPT-4o-TTS
+- 🗣️ **Voice Interface**: (Work-In-Progress) Hands-free speech-to-text input and text-to-speech responses using Azure OpenAI GPT-4o-Transcribe and GPT-4o-TTS
 - 📸 **Image Analysis**: Submit photos of equipment for visual diagnostics and part identification
 - 📚 **Multimodal RAG**: Retrieve relevant information from manuals, guides, and documentation based on both text and visual inputs
 - 🧠 **Agentic Retrieval**: Smart, context-aware search that understands the technician's environment and needs
@@ -137,7 +138,7 @@ This proof-of-concept follows several key principles for industrial field servic
 
 ## Next Steps
 
-Future enhancements could include:
+Future enhancements *could* include:
 
 1. Offline mode for limited connectivity environments
 2. Custom voice commands for common repair procedures
@@ -151,7 +152,7 @@ Future enhancements could include:
 
 ## Acknowledgments
 
-This project builds upon the [Azure AI Search Multimodal RAG Demo](https://github.com/Azure-Samples/azure-ai-search-multimodal-sample) with additional voice capabilities.
+This project builds upon the [Azure AI Search Multimodal RAG Demo](https://github.com/Azure-Samples/azure-ai-search-multimodal-sample) with additional voice capabilities (Work-In-Progress).
 
 ### Key Azure AI Search Resources
 
