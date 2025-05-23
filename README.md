@@ -1,5 +1,10 @@
 # Field Service Assistant: Multimodal RAG with Voice Interface
 
+> **Important Notice:**  
+> This project is intentionally kept lean and simple, providing a hands-on experience with multimodal indexing, RAG search and AI reasoning techniques. While not intended for production use, it serves as a powerful starting point for exploring how it can unlock new possibilities in building smarter, more context-aware applications.
+> **Voice Integration:**  
+> The real-time voice (STT/TTS) feature is a work in progress. Stay tuned for updates as new capabilities are added and improved!
+
 ![Field Service Assistant Banner](docs/images/main_page.png)
 
 ## Overview
@@ -32,7 +37,7 @@ The Field Service Assistant solves this by allowing technicians to:
 The application is built on a modern architecture leveraging Azure's AI services:
 
 1. **Frontend**: React-based UI with voice recording capabilities and image upload
-2. **Backend**: FastAPI service with WebSocket streaming for real-time voice interaction
+2. **Backend**: (Work-In-Progress) API service with WebSocket streaming for real-time voice interaction
 3. **Search Layer**: Azure AI Search with multimodal indexing of manuals and documentation
 4. **AI Services**:
    - Azure OpenAI GPT-4o for conversational responses
