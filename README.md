@@ -33,8 +33,6 @@ The Field Service Assistant solves this by allowing technicians to:
 
 ## System Architecture
 
-![System Architecture](docs/images/water_damage_citations.png)
-
 The application is built on a modern architecture leveraging Azure's AI services:
 
 1. **Frontend**: React-based UI with voice recording capabilities and image upload
@@ -45,6 +43,95 @@ The application is built on a modern architecture leveraging Azure's AI services
    - GPT-4o-mini-transcribe for speech-to-text conversion
    - GPT-4o-mini-tts for text-to-speech output
    - Azure Document Intelligence for processing technical documentation
+
+### System Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "Frontend"
+        UI[React UI]
+        Voice[Voice Control<br/>Component]
+        Audio[Audio Processing]
+    end
+
+    subgraph "WebSocket Layer"
+        WS[WebSocket Server<br/>/voice endpoint]
+    end
+
+    subgraph "Backend Services"
+        API[Python API<br/>Service]
+        RAG[RAG Base<br/>Component]
+        Search[Search Service]
+    end
+
+    subgraph "Azure AI Services"
+        STT[Azure OpenAI<br/>GPT-4o-mini-transcribe]
+        TTS[Azure OpenAI<br/>GPT-4o-mini-tts]
+        GPT[Azure OpenAI<br/>GPT-4o]
+        AIS[Azure AI Search<br/>Multimodal Index]
+        DI[Azure Document<br/>Intelligence]
+    end
+
+    subgraph "Storage"
+        Blob[Azure Blob Storage<br/>Images & Documents]
+    end
+
+    %% User interactions
+    User((Field Technician))
+    User -->|Voice Input| Voice
+    User -->|Image Upload| UI
+    UI -->|Display Results| User
+    Audio -->|Audio Output| User
+
+    %% Frontend connections
+    Voice <-->|Audio Stream| WS
+    UI <-->|Chat Messages| API
+    Voice --> Audio
+
+    %% WebSocket connections
+    WS <-->|Audio Data| STT
+    WS <-->|Text Data| TTS
+
+    %% Backend connections
+    API --> RAG
+    RAG --> Search
+    Search --> AIS
+    RAG --> GPT
+    API --> DI
+    
+    %% Azure connections
+    AIS <--> Blob
+    DI --> Blob
+    
+    %% Data flow annotations
+    WS -.->|Transcribed Text| API
+    API -.->|Response Text| WS
+```
+
+### Voice Processing Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant WebSocket
+    participant STT
+    participant Backend
+    participant TTS
+    
+    User->>Frontend: Speak Question
+    Frontend->>WebSocket: Audio Stream (PCM16)
+    WebSocket->>STT: Forward Audio
+    STT->>WebSocket: Transcript Delta
+    WebSocket->>Frontend: Transcript Update
+    Frontend->>Backend: Complete Transcript
+    Backend->>Backend: Process with RAG
+    Backend->>WebSocket: Response Text
+    WebSocket->>TTS: Generate Speech
+    TTS->>WebSocket: Audio Chunks
+    WebSocket->>Frontend: Audio Stream
+    Frontend->>User: Play Response
+```
 
 ## Getting Started
 
