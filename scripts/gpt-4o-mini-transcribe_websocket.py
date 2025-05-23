@@ -66,7 +66,7 @@ def on_message(ws, message):
     try:
         data = json.loads(message)
         event_type = data.get("type", "")
-        print("Event type:", event_type)
+        # print("Event type:", event_type)
         # print(data)
         # Stream live incremental transcripts
         if event_type == "conversation.item.input_audio_transcription.delta":
