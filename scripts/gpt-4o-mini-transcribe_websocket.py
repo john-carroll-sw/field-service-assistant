@@ -39,7 +39,7 @@ def on_open(ws):
                 "model": "gpt-4o-mini-transcribe",
                 "prompt": "Respond in English.",
             },
-            "input_audio_noise_reduction": {"type": "near_field"},
+            # "input_audio_noise_reduction": {"type": "near_field"}, <---- NOTE This does not seem to be supported by the API any longer
             "turn_detection": {"type": "server_vad"},
         },
     }
